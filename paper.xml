@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/css" href="resources/css/paper.css"?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0">
+	<info>
+        <title>Taking Schematron QuickFix To The Next Level</title>
+        <author>
+            <personname><firstname>Octavian</firstname>
+                <surname>Nadolu</surname></personname>
+            <affiliation>
+                <orgname>Oxygen XML Editor</orgname>
+            </affiliation>
+            <email>octavian_nadolu@oxygenxml.com</email>
+        </author>
+        <abstract>
+            <para>The <link xl:href="http://schematron-quickfix.github.io/sqf/spec/SQFSpec.html"
+                    >Schematron QuickFix (SQF)</link> language can be used to improve efficiency and
+                quality when editing XML documents. You can define actions that will add complex XML
+                structure in your documents, make modifications in multiple places, or actions that
+                will convert an XML structure into another. These changes are made by keeping the
+                document structure valid and conforming to your project specification, and will help
+                the content writer add content more easily and without making mistakes.</para>
+            <para>To build complex actions, you can mix the Schematron QuickFix language with <link
+                    xl:href="http://schematron.com/">ISO Schematron</link>, or with different
+                versions of <link xl:href="https://www.w3.org/TR/xslt/all/">XSLT</link> and <link
+                    xl:href="https://www.w3.org/TR/xpath/all/">XPath</link>, or you can define
+                your own extensions using programming languages such as Java. This means that you
+                can perform modifications in multiple external documents, or display dialog boxes to
+                get input from your users, or use complex algorithms for processing the content of
+                the documents.</para>
+            <para>The Schematron QuickFix is a modular language. Even though it is simple (it only
+                has four types of operations that can be performed: add, delete, replace, and string
+                replace), new types of operations can be created (such as wrap, unwrap, rename, or
+                join). This can be implemented by using abstract quick fixes and by creating
+                libraries of quick fixes that can be reused for various different XML vocabularies
+                (such as DITA, DocBook. TEI). By using a library of quick fixes, it will help the
+                Schematron QuickFix developers to create the actions more easily and reuse the quick
+                fixes created by others.</para>
+            <para>This presentation will focus on some interesting use-cases and Schematron QuickFix
+                examples that can be easily adapted to your projects. The examples will include both
+                abstract quick fixes and complex quick fixes that use XSLT and Java.</para>
+        </abstract>
+    </info>
+    <section>
+        <title>Introduction</title>
+        <para>Schematron is a powerful language, and one of the reasons is because it allows the
+            schema developers to define there own custom messages. The messages can also include
+            hints to help the user correct the problem, but this operation must be performed
+            manually. Correcting the problem manually is inefficient and can result in additional
+            problems.</para>
+        <para>The SQF language allows you to define actions that will automatically correct the
+            problem reported by Schematron assertions. This will save you time and money, and will
+            help to avoid the potential for generating other problems.</para>
+    </section>
+   <section>
+        <title>Schematron QuickFix Language</title>
+        <para>Schematron QuickFix (SQF) is a simple language that allows the Schematron developer to
+            define actions that will correct the problems reported by Schematron rules. SQF was
+            created as an extension of the Schematron language. It was developed within the W3C
+            "Quick-Fix Support for XML Community Group". The first draft of the Schematron Quick Fix
+            specification was published in April 2015, second draft in March 2018, and it is now
+            available on the <link xl:href="https://www.w3.org/community/quickfix/">W3C Quick-Fix
+                Support for XML community group</link> page.</para>
+        <para>The actions defined in a Schematron QuickFix are called operations. There are four
+            types of operations defined in the SQF language that can be performed on an XML
+            document: <emphasis>add</emphasis>, <emphasis>delete</emphasis>,
+                <emphasis>replace</emphasis>, and <emphasis>string replace</emphasis>. The
+            operations must perform precise changes in the documents without affecting other parts
+            of the XML document. </para>
+        <example>
+            <title>Example: A Schematron Quick Fix that adds a 'bone' element as child of the 'dog'
+                element</title>
+            <programlisting language="xml">&lt;sch:rule context="dog">
+    &lt;sch:assert test="bone" sqf:fix="addBone">
+        A dog should have a bone.&lt;/sch:assert>
+    &lt;sqf:fix id="addBone">
+        &lt;sqf:description>
+            &lt;sqf:title>Add a bone&lt;/sqf:title>
+        &lt;/sqf:description>
+        &lt;sqf:add node-type="element" target="bone"/>
+    &lt;/sqf:fix>
+&lt;/sch:rule></programlisting>
+        </example>
+    </section>
+	<section>
+        <title>Use Cases</title>
+        <section>
+            <title>Type of Users</title>
+            <para>It is important to have quality control over the XML documents in your project.
+                You can do this using a Schematron schema in combination with other schemas (such as
+                XSD, RNG, or DTD). Schematron solves the limitation that other types of schema have
+                when validating XML documents because it allows the schema author to define the
+                tests and control the messages that are presented to the user. It makes validation
+                problems more accessible to users and it ensures that they understand the
+                problem.</para>
+            <para>However, correcting the validation problems in the XML documents can sometimes be
+                difficult for a content writer. Many content writers are not XML experts, but they
+                know the context of the document very well and they are experts in their domain. If
+                a problem occurs when they write content in the document, they need to fix it
+                correctly without adding new ones.</para>
+            <para>On the other hand, an XML expert knows the syntax very well and knows how to fix
+                the problem, but they may not be familiar with the domain of the content writer. In
+                this case, since the XML expert and content writer will need to work together to
+                correct the problems, this will introduce extra costs and take more time.</para>
+            <para>Using SQF, you can provide in-place actions to help the content writer correct the
+                problems by themselves without involving the XML expert, and without producing new
+                errors. This will solve the problem faster and companies will spend less money. The
+                XML expert can focus on developing new rules and quick fixes for the content
+                writer.</para>
+        </section>
+        <section>
+            <title>Generate Content Using XPath</title>
+            <para>The content inserted by a Schematron quick fix operation can be static, such as
+                text or tags specified in the quick fix operation, or can be generated dynamically
+                depending on the current node content or depending on the other nodes from the
+                document. To generate dynamic content, you can use XPath expressions in the value of
+                the <emphasis>@select</emphasis>" attribute for the <emphasis>sqf:add</emphasis>,
+                    <emphasis>sqf:replace</emphasis>, or <emphasis>sqf:stringReplace</emphasis>
+                operations.</para>
+            <para>By using XPath expressions, you can perform complex operations and generate
+                content depending on the existence of some elements in the document or use content
+                from other documents. You can benefit from more than 200 XPath built-in functions.
+                There are functions for string values, numeric values, date and time comparison,
+                node manipulation, and much more.</para>
+            <para>For example, perhaps you have a rule that checks if a section
+                    <emphasis>element</emphasis> has an <emphasis>@id</emphasis> attribute specified
+                and reports any occurrences as a problem. Then, you can have a quick fix that adds
+                an <emphasis>@id</emphasis> attribute on the current <emphasis>section</emphasis>
+                element. The value of the attribute can be created by using the title section and
+                removing any special characters or spaces from the title. In case the section does
+                not have a title, you can generate a random value for the id. </para>
+            <example>
+                <title>Example: Use the title value as ID or generate a random ID</title>
+                <programlisting language="xml">&lt;sqf:fix id="addID">
+  &lt;sqf:description>
+      &lt;sqf:title>Add ID to the current section&lt;/sqf:title>
+  &lt;/sqf:description>
+  &lt;sqf:add node-type="attribute" target="id"
+      select="if (exists(title) and string-length(title) > 0)
+      then substring(lower-case(replace(replace(normalize-space(string(title)), '\s', '_'),
+      '[^a-zA-Z0-9_]', '')), 0, 50)
+      else generate-id()"/>
+&lt;/sqf:fix></programlisting>
+            </example>
+            <para>In case you want to add an <emphasis>@id</emphasis> attribute on all the
+                    <emphasis>section</emphasis> elements from the document, you can create a quick
+                fix that matches all the selection elements that do not have an id attribute. To do
+                this, you need to create a similar quick fix as the previous one and just add a
+                    <emphasis>match</emphasis> attribute on the <emphasis>sqf:add</emphasis>
+                operation with the value: <emphasis>//section[not(@id)]</emphasis>. </para>
+            <example>
+                <title>Example: Match all the section elements from the document and add an
+                    ID</title>
+                <programlisting language="xml">&lt;sqf:fix id="addID">
+  &lt;sqf:description>
+      &lt;sqf:title>Add ID to the all entries from document&lt;/sqf:title>
+  &lt;/sqf:description>
+  &lt;sqf:add match="//section[not(@id)]" node-type="attribute" target="id"
+      select="if (exists(title) and string-length(title) > 0)
+      then substring(lower-case(replace(replace(normalize-space(string(title)), '\s', '_'),
+      '[^a-zA-Z0-9_]', '')), 0, 50)
+      else generate-id()"/>
+&lt;/sqf:fix></programlisting>
+            </example>
+            <para>You can also use XPath functions such as <emphasis>document-uri(/)</emphasis> in
+                case you want to add an <emphasis>id</emphasis> attribute with the same value as the
+                file name.</para>
+            <example>
+                <title>Example: Get the current document file name and use it as ID</title>
+                <programlisting language="xml">&lt;sqf:fix id="addFileID">
+  &lt;sch:let name="reqId" value="substring-before(tokenize(document-uri(/), '/')[last()], '.')"/>
+  &lt;sqf:description>
+      &lt;sqf:title>Set "&lt;sch:value-of select="$reqId"/>" as ID&lt;/sqf:title>
+  &lt;/sqf:description>
+  &lt;sqf:add node-type="attribute" target="id" select="$reqId"/>
+&lt;/sqf:fix></programlisting>
+            </example>
+        </section>
+        <section>
+            <title>Change Text Using Regular Expressions</title>
+            <para>To make changes in text content, you need to use regular expressions. The
+                    <emphasis>sqf:stringReplace</emphasis> operation allows you to specify a regular
+                expression to find sub-strings of text content and replace them with nodes or other
+                strings. The regular expression need to be specified in the value of the
+                    <emphasis>regex</emphasis> attribute.</para>
+            <para>For example, suppose you have a rule that checks if a link is added as text
+                content and not marked as a link. You can create a quick fix replace the text link
+                with an <emphasis>xref</emphasis> element that has the value of the text link. This
+                will allow you to automatically fix the links from the text and mark them as
+                clickable links.</para>
+            <example>
+                <title>Example: Create a clickable link from a text link</title>
+                <programlisting language="xml">&lt;sqf:fix id="convertToLink">
+  &lt;sqf:description>
+      &lt;sqf:title>Convert '&lt;sch:value-of select="$linkValue"/>' text link to xref&lt;/sqf:title>
+  &lt;/sqf:description>
+  &lt;sqf:stringReplace regex="(http|www)\S+">
+      &lt;xref href="{$linkValue}" format="html"/>
+  &lt;/sqf:stringReplace>
+&lt;/sqf:fix></programlisting>
+            </example>
+            <para>To get the value of the link from the text content, you can use the
+                    <emphasis>xsl:analyze-string</emphasis> instructions. This will allow you to
+                process the string content and obtain the content that you need. Then you can make
+                the change in the document using the <emphasis>stringReplace</emphasis>
+                operation.</para>
+            <example>
+                <title>Example: Obtain the value of the link from text</title>
+                <programlisting language="xml">&lt;xsl:variable name="linkValue">
+  &lt;xsl:analyze-string select="." regex="(http|www)\S+">
+    &lt;xsl:matching-substring>
+      &lt;xsl:value-of select="regex-group(0)"/>
+    &lt;/xsl:matching-substring>
+  &lt;/xsl:analyze-string>
+&lt;/xsl:variable></programlisting>
+            </example>
+            <para>Therefore, using regular expressions and the
+                    <emphasis>sqf:stringReplace</emphasis> operation, you can tag content or you can
+                replace text content with other text content.</para>
+        </section>
+        <section>
+            <title>Using XSLT to Generate Content</title>
+            <para>A Schematron QuickFix can also be used to improve efficiency when adding content
+                in XML documents. You can define actions that will automatically add a new XML
+                structure in the document at a valid location, or actions that will convert an XML
+                structure into another. These types of actions will help the content writer add
+                content more easily and without making mistakes.</para>
+            <para>Using XSLT, you can create complex actions. For example, actions that will correct
+                a table layout and use complex XSLT processing, or actions that use data from other
+                documents or from a database. This will allow the content writer to focus on the
+                content of the document while the quick fixes will help them to easily insert XML
+                structure or to fix various issues that can appear during editing.</para>
+            <para>If you have a rule that checks if a table layout is correct and you have the same
+                number of cells on each row, you can create a quick fix that adds the missing cells.
+                To do this, you can use XSLT to calculate and generate the exact number of cells
+                that are missing on each row.</para>
+            <example>
+                <title>Example: Add the missing cells from a table</title>
+                <programlisting language="xml">&lt;sqf:fix id="addCells">
+  &lt;sqf:description>
+      &lt;sqf:title>Add enough empty cells on each row&lt;/sqf:title>
+  &lt;/sqf:description>
+  &lt;sch:let name="reqColumsNo" value="max(.//row/count(entry))"/>
+  &lt;sqf:add match="row" position="last-child">
+      &lt;sch:let name="columnNo" value="count(entry)"/>
+      &lt;xsl:for-each select="1 to xs:integer($reqColumsNo - $columnNo)">
+          &lt;entry/>
+      &lt;/xsl:for-each>
+  &lt;/sqf:add>
+&lt;/sqf:fix></programlisting>
+            </example>
+        </section>
+        <section>
+            <title>Ignore Schematron Checks</title>
+            <para>Schematron allows you to define your own custom validation rules for XML
+                documents. You can even set different severities for the reported problems, such as
+                    <emphasis>fatal</emphasis>, <emphasis>error</emphasis>,
+                    <emphasis>warn</emphasis>, <emphasis>info</emphasis>. But in some situations,
+                the users want to ignore some of this rules. For example, if the problem severity is
+                    <emphasis>warn</emphasis>, maybe it is not something important, or if the
+                problem severity is <emphasis>info</emphasis>, maybe is more like a guideline for
+                the users. </para>
+            <para>There is no built-in implementation to ignore reported Schematron problems. But
+                this mechanism can be implemented in different ways using the current Schematron
+                support and quick fixes. To do this, you need to uniquely determine the rule that
+                you want to ignore and you can do this by assigning an ID to the rule check. Then
+                you need to store this ID in the file or in a separate file or option to avoid
+                triggering the Schematron check in the future. You can assign the ID to a
+                    <emphasis>rule</emphasis> element. This means that you will be able to ignore
+                all the asserts from that rule. Alternatively, you can assign an ID to each
+                    <emphasis>assert/report</emphasis> element, and this means that you will be able
+                to ignore each assert/report from the rule separately.</para>
+            <para>In my implementation, I decided to assign an ID for each assert/report check. The
+                ID is specified in the value of the <emphasis>ruleCheckId</emphasis> variable, and
+                it will be used by the <emphasis>isRuleIgnored()</emphasis> function to check if the
+                current rule is marked as ignored. A better way to implement this is to use the
+                    <emphasis>id</emphasis> attribute value specified on the
+                    <emphasis>assert/report</emphasis> element, but this means that it will not work
+                with the current Schematron implementation that does not process this ID value. In
+                the following example, the report is triggered only if the
+                    <emphasis>boldCheck</emphasis> rule is not marked as ignored. </para>
+            <example>
+                <title>Example: Schematron rule that is triggered only if is not ignored</title>
+                <programlisting language="xml">&lt;sch:let name="ruleCheckId" value="'boldCheck'"/>
+&lt;sch:report test="not(func:isRuleIgnored(., $ruleCheckId)) and exists(b)"
+  sqf:fix="resolveBold ignoreRule ignoreRuleGlobal" role="warn"> Bold element is
+  not allowed in title. &lt;/sch:report></programlisting>
+            </example>
+            <para>To store the ID of the rule check that is ignored in the XML document, I used a
+                processing instruction with the name <emphasis>SuppressRule</emphasis>. The
+                processing instruction is added before the current node, in case you want to ignore
+                only the current rule check, or at the end of the document in case you want to
+                ignore the current rule in the entire document. Another solution would be to store
+                this ID in a separate document to avoid adding processing instructions in the edited
+                XML document.</para>
+            <para>The following XSLT function checks if there is a processing instruction with the
+                name <emphasis>SuppressRule</emphasis> before the current element or at the end of
+                the document, and if the ID of the current rule is specified in the processing
+                instruction. It returns <emphasis>true</emphasis> if the rule is specified as
+                ignored.</para>
+            <example>
+                <title>Example: XSLT function that verifies if an assert/report is marked as
+                    ignored</title>
+                <programlisting language="xml">&lt;xsl:function name="func:isRuleIgnored" as="xs:boolean">
+  &lt;xsl:param name="node"/>
+  &lt;xsl:param name="ruleId"/>
+  &lt;xsl:value-of
+    select="($ruleId = $node/preceding-sibling::processing-instruction()[name() = 'SuppressRule']/tokenize(., ' ')
+      or $ruleId = /processing-instruction()[name() = 'SuppressRule']/tokenize(., ' '))"/>
+&lt;/xsl:function></programlisting>
+            </example>
+            <para>To mark a rule as ignored, you can use quick fix actions. You can define a quick
+                fix that will marked as ignore the current rule check by adding a processing
+                instruction before the current element, with the name
+                    <emphasis>SuppressRule</emphasis> and the value of the rule ID. In case the
+                processing instruction is already added for other ignored rules, it will concatenate
+                the current rule ID to the existing ones.</para>
+            <example>
+                <title>Example: Quick fix that adds the current check to the ignore list</title>
+                <programlisting language="xml">&lt;sqf:fix id="ignoreRule" role="delete">
+  &lt;sqf:description>
+    &lt;sqf:title>Ignore current rule&lt;/sqf:title>
+  &lt;/sqf:description>
+  &lt;sch:let name="ignoredRulePI" value="preceding-sibling::processing-instruction()[name() = 'SuppressRule']"/>
+  &lt;sqf:delete match="$ignoredRulePI" use-when="$ignoredRulePI"/>
+  &lt;sqf:add position="before">
+    &lt;xsl:processing-instruction name="SuppressRule" select="concat($ignoredRulePI, ' ', $ruleCheckId)"/>
+  &lt;/sqf:add>
+&lt;/sqf:fix></programlisting>
+            </example>
+            <para>You can also define a similar quick fix action that will ignore the current rule
+                check for the entire document by adding the processing instruction at the end of the
+                document. You can also define a quick fix action that will add the rule ID in a
+                separate file and specify if the rule is ignored for the current file or for the
+                entire project.</para>
+        </section>
+        <section>
+            <title>SQF User Input Dialog</title>
+            <para>Sometimes, when executing a quick fix action, you need to interact with the user
+                and get input from them, or make them choose between different options. The quick
+                fix specification defines the <emphasis>sqf:user-entry</emphasis> for such
+                interactions. The <code>sqf:user-entry</code> element defines a value that must be
+                set manually by the user. </para>
+            <para>If you need multiple values to be specified by the user, you can define multiple
+                    <code>user-entry</code> elements. For each <emphasis>user-entry</emphasis>, a
+                dialog box will be displayed where the user can specify values. The
+                    <code>user-entry</code> element can be used as an XPath variable where the XPath
+                variable is the name of the <code>user-entry</code>. </para>
+            <para>In the following example, the quick fix action defines two user entries, one that
+                will allow the user to specify the value of the hypertext link, and one the will
+                allow them to specify the link title. When the quick fix will be executed, two
+                dialog boxes will be displayed, one for the link value and a second one for the link
+                title. The order of the dialog boxes is define by the order of the defined user
+                entries in the quick fix.</para>
+            <example>
+                <title>Example: Quick fix action that presents two user entry dialogs</title>
+                <programlisting language="xml">&lt;sqf:fix id="addAnchorAndTitle">
+  &lt;sqf:description>
+    &lt;sqf:title>Surround image with a hypertext link&lt;/sqf:title>
+  &lt;/sqf:description>
+  &lt;sqf:user-entry name="href">
+    &lt;sqf:description>
+      &lt;sqf:title>Enter anchor href value:&lt;/sqf:title>
+    &lt;/sqf:description>
+  &lt;/sqf:user-entry>
+  &lt;sqf:user-entry name="linkTitle">
+    &lt;sqf:description>
+      &lt;sqf:title>Enter link title:&lt;/sqf:title>
+    &lt;/sqf:description>
+  &lt;/sqf:user-entry>
+  &lt;sqf:replace>
+    &lt;a href="{$href}" title="{$linkTitle}">
+      &lt;xsl:copy-of select="."/>
+    &lt;/a>
+  &lt;/sqf:replace>
+&lt;/sqf:fix></programlisting>
+            </example>
+            <para>In a quick fix, you can also use you own extensions using programming languages
+                such as Java. This will allow you to present your own custom dialog boxes to get
+                input from the user or make complex processing that is not possible with the current
+                Schematron or XSLT support.</para>
+            <para>For example, you can invoke the <emphasis>JFileChooser</emphasis> dialog box to
+                allow the user to choose a file from the file system, and then use the file path in
+                the document. To do this, you need to create a quick fix action that will call an
+                XSL template that will present the dialog box and obtain the selected value from the
+                user.</para>
+            <example>
+                <title>Example: Quick fix that displays a browse dialog</title>
+                <programlisting language="xml">&lt;sqf:fix id="addSrc">
+  &lt;sqf:description>
+    &lt;sqf:title>Browse and add @src attribute&lt;/sqf:title>
+  &lt;/sqf:description>
+  &lt;sqf:add node-type="attribute" target="src">
+    &lt;xsl:call-template name="browse"/>
+  &lt;/sqf:add>
+&lt;/sqf:fix></programlisting>
+            </example>
+            <para>To display the dialog box from XSLT, you need to create a new instance using a
+                    <emphasis>new()</emphasis> call, and then use the
+                    <emphasis>showOpenDialog()</emphasis> to show a dialog box that will allow the
+                user to choose a file. Depending on whether the user decides to cancel the dialog
+                box or choose a file, you can obtain the current selected file using the
+                    <emphasis>getSelectedFile()</emphasis> call. The result of the template will be
+                sent to the quick fix action that will inset it in the document.</para>
+            <example>
+                <title>Example: Quick fix that displays a browse dialog</title>
+                <programlisting language="xml">&lt;xsl:template name="browse">
+  &lt;xsl:variable name="dialog" select="jBrowse:new()"/>
+  &lt;xsl:variable name="result" select="jBrowse:showOpenDialog($dialog, $dialog)"/>
+  &lt;xsl:if test="$result = 0">
+    &lt;xsl:value-of select="jBrowse:getSelectedFile($dialog)"/>
+  &lt;/xsl:if>
+&lt;/xsl:template></programlisting>
+            </example>
+        </section>
+    </section>
+    <section>
+        <title>Abstract Quick Fixes</title>
+        <para>The Schematron QuickFix language is a simple language, and has just four types of
+            operations that can be performed (add, delete, replace, and string replace). Being a
+            simple language, it is easy to learn and use, and also easy to implement by
+            applications. </para>
+        <para>Sometimes the developers that create the quick fixes need to use other types of
+            operations (such as wrap, unwrap, rename, or join). They expect to have these operations
+            defined in the language. Defining more operations in the language will help them create
+            the quick fixes more easy, but this means that the language will be more complicated to
+            learn and harder to be implemented by applications. A solution to this problem is to
+            define a library of generic quick fixes that can be used for other types of
+            operations.</para>
+        <para>A library of quick fixes can be implemented using abstract quick fixes. An abstract
+            quick fix can be defined as a quick fix that has abstract parameters defined at the
+            beginning of an <code>sqf:fix</code> element.</para>
+        <example>
+            <title>Example: Schematron abstract quick fix that can be used to rename a generic
+                element</title>
+            <programlisting language="xml">&lt;sqf:fix id="renameElement" role="replace">
+    &lt;sqf:param name="element" abstract="true"/>
+    &lt;sqf:param name="newName" abstract="true"/>
+    &lt;sqf:description>
+        &lt;sqf:title>Rename '$element' element in '$newName'&lt;/sqf:title>
+    &lt;/sqf:description>
+    &lt;sqf:replace match="." target="$newName" node-type="element" select="node()"/>
+&lt;/sqf:fix></programlisting>
+        </example>
+        <para>An abstract quick fix can be instantiated from an abstract pattern. The pattern must
+            have all the parameters declared in the quick fix, and the quick fix must declare all
+            the abstract parameters that are used. Abstract parameters cannot be used as normal
+            XPath variables. The reference of the abstract parameter will be replaced by the value
+            specified in the abstract pattern.</para>
+        <example>
+            <title>Example: Schematron abstract pattern that reference an abstract quick fix </title>
+            <programlisting language="xml">&lt;sch:pattern id="elementNotAllowed" abstract="true">
+    &lt;sch:rule context="$element">
+        &lt;sch:assert test="false()" sqf:fix="renameElement"> 
+            Element '$element' not allowed, use '$newName' instead.
+        &lt;/sch:assert>
+    &lt;/sch:rule>
+&lt;/sch:pattern></programlisting>
+        </example>
+        <para>The abstract pattern can be instantiated by providing different values for the
+            parameters. Therefore, you can quickly adapt to multiple variants of XML formats and
+            provide rules and quick fixes that will allow the user to correct the problems.</para>
+        <example>
+            <title>Example: Schematron abstract pattern instantiation</title>
+            <programlisting language="xml">&lt;sch:pattern is-a="elementNotAllowed">
+    &lt;sch:param name="element" value="orderedlist"/>
+    &lt;sch:param name="newName" value="itemizedlist"/>
+&lt;/sch:pattern></programlisting>
+        </example>
+        <para>Another solution for providing other quick fix actions without using abstract patterns
+            is to use the <link
+                xl:href="http://schematron-quickfix.github.io/sqf/publishing-snapshots/March2018Draft/spec/SQFSpec.html#param.call-fix"
+                    ><code>sqf:call-fix</code></link> element. </para>
+    </section>
+    <section>
+        <title>Multilingual Support in SQF</title>
+        <para>The second draft of the Schematron QuickFix specification comes with an important
+            addition, the localization concept for quick fixes. It is based on the Schematron
+            localization concept, but it is more flexible.</para>
+        <para>A new attribute was added for the <code>sqf:title</code> and <code>sqf:p</code>
+            elements, the <code>@ref</code> attribute. In the value of the <code>@ref</code>
+            attribute, you can specify one or more IDs that point to different translations of the
+            current phrase. The specification does not restrict the implementations of the
+                <code>@ref</code> attribute to a specific reference structure.</para>
+        <example>
+            <title>Example: Schematron QuickFix that has multilingual support</title>
+            <programlisting language="xml"> &lt;sqf:fix id="addBone">
+     &lt;sqf:description>
+         &lt;sqf:title ref="fix_en fix_de">Add a bone&lt;/sqf:title>
+         &lt;sqf:p ref="fix_d_en fix_d_de">Add a bone as child element&lt;/sqf:p>
+     &lt;/sqf:description>
+     &lt;sqf:add node-type="element" target="bone"/>
+ &lt;/sqf:fix></programlisting>
+        </example>
+        <para>One possible implementation of the multilingual support in SQF is to use the
+            Schematron <code>diagnostics</code> element. You can define a diagnostic for each
+            referenced <code>id</code> and specify the language of the diagnostic message using the
+                <code>xml:lang</code> attribute on the <code>sch:diagnostic</code> element or on its
+            parent.</para>
+        <example>
+            <title>Example: Schematron diagnostics </title>
+            <programlisting language="xml"> &lt;sch:diagnostics>
+     &lt;sch:diagnostic id="fix_en" xml:lang="en">Add a bone&lt;/sch:diagnostic>
+     &lt;sch:diagnostic id="fix_de" xml:lang="de">Fügen Sie einen Knochen hinzu&lt;/sch:diagnostic>
+ &lt;/sch:diagnostics></programlisting>
+        </example>
+        <para>This implementation conforms with the Schematron standard that also uses diagnostic
+            for localization. It is easier to translate the messages because the Schematron messages
+            and quick fix messages are kept together, and another important aspect is that it will
+            be the same implementation used for both Schematron and SQF messages.</para>
+        <para>There are also some issues with this implementation. One of them is that you cannot
+            have IDs with the same name in your document because the diagnostic uses XML IDs.
+            Another issue is that SQF will depend on the Schematron language and cannot be
+            encapsulated separately.</para>
+        <para>Another implementation of quick fix localization is to use Java Property Files. In
+            this case, the localized text phrases should be stored in external files, grouped by
+            language. These files should be placed parallel to the Schematron schema with the name
+            pattern <code>${fileName}_${lang}.xml</code>. The <code>${fileName}</code> should be the
+            name of the Schematron schema but without the extension. The <code>@ref</code> attribute
+            from the quick fix must reference the property key.<example>
+                <title>Example: Java Property File for German translation </title>
+                <programlisting language="xml">&lt;!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+&lt;properties>
+    &lt;entry key="dog.addBone.title">Füge einen Knochen hinzu&lt;/entry>
+    &lt;entry key="dog.addBone.p">Der Hund wird einen Knochen erhalten.&lt;/entry>
+&lt;/properties></programlisting>
+            </example>In contrast to the references to <code>sch:diagnostic</code> elements, in this
+            case, it is not necessary to make any changes in the Schematron schema to introduce a
+            new language. You just have to add a file with the name (for example
+                <code>localized_fr.xml</code>) in the same folder of the Schematron file (for
+            example <code>localized.sch</code>). </para>
+        <para>However, this needs a different implementation than the standard Schematron, and the
+            Schematron messages and the SQF messages will be in different locations.</para>
+    </section>
+    <section>
+        <title>Generate Quick Fixes Dynamically</title>
+        <para>Another important addition in the second draft of the Schematron QuickFix
+            specification is the possibility to define generic quick fixes. Using a generic quick
+            fix, the developer can generate multiple similar fixes using the values provided by an
+            XPath expression.</para>
+        <para>In the first draft of the SQF specification, it was not possible to have a dynamic
+            amount of quick fixes for a Schematron error. The developer should specify the quick
+            fixes presented for a Schematron error. They could only control whether or not a quick
+            fix will be presented to the user by using the <code>@use-when</code> attribute.</para>
+        <para>To create a generic quick fix, the SQF developer needs to set the
+                <code>use-for-each</code> attribute for the <code>sqf:fix</code> element. The value
+            of the <code>use-for-each</code> attribute must be an XPath expression. For each item of
+            the evaluated XPath expression, a quick fix is provided to the user. The context inside
+            of the quick fix will be the current Schematron error context. To access the value of
+            the current item from the XPath expression, a built-in variable
+                <code>$sqf:current</code> can be used.</para>
+        <example>
+            <title>Example: A Generic QuickFix that provides a quick fix to remove each item from a
+                list</title>
+            <programlisting language="xml">&lt;sqf:fix id="removeAnyItem" use-for-each="1 to count(li)">
+    &lt;sqf:description>
+        &lt;sqf:title>Remove item #&lt;sch:value-of select="$sqf:current"/>&lt;/sqf:title>
+    &lt;/sqf:description>
+    &lt;sqf:delete match="li[$sqf:current]"/>
+&lt;/sqf:fix></programlisting>
+        </example>
+        <para>Using generic quick fixes, the SQF developer can now provide a dynamic number of fix
+            actions depending on a set of values from the current document or they can use an XPath
+            expression to get the values from external documents.</para>
+    </section>
+    <section>
+        <title>Conclusion</title>
+        <para>Schematron has become a very popular language in the XML world. In the last few years,
+            Schematron started to be used more and more and in numerous domains. One of the reasons
+            Schematron started to become more popular is because you now also have the ability to
+            define actions that will allow the user to correct the problem, rather than just
+            presenting an error message. SQF has made Schematron more powerful and became a powerful
+            language in itself.</para>
+        <para>SQF has also evolved by adding the multilingual support or the support to generate
+            quick fixes dynamically. The specification has became more accurate and the
+            implementations more stable. Developers are discovering new ideas for working with
+            Schematron quick fixes even outside of Schematron language.</para>
+    </section>
+
+	<bibliography xml:id="references">
+		
+		<bibliomixed>
+			<abbrev>SQF Spec</abbrev> Schematron Quick Fix specification, <bibliomisc><link
+					xl:href="http://schematron-quickfix.github.io/sqf"/></bibliomisc></bibliomixed>
+		<bibliomixed><abbrev>SQF Site</abbrev> : <title>Schematron Quick Fix official site</title>
+			<bibliomisc><link xl:href="http://www.schematron-quickfix.com/"
+			/></bibliomisc></bibliomixed>
+		<bibliomixed><abbrev>SCH</abbrev>
+			<orgname>Schematron official site</orgname>
+			<bibliomisc><link xl:href="http://schematron.com/"/></bibliomisc></bibliomixed>
+		<bibliomixed><abbrev>SCH Spec</abbrev> Schematron specification <bibliomisc><link
+					xl:href="https://standards.iso.org/ittf/PubliclyAvailableStandards"
+				/></bibliomisc></bibliomixed>
+		
+	</bibliography>
+
+</article>
