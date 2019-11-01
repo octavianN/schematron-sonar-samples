@@ -1,0 +1,14 @@
+language: xslt
+install:
+- echo "Installed"
+script:
+- sh validation/publish.sh
+env:
+  global:
+  - TITLE="Schematron sonar report"
+  - WELCOME="Your Sonar Report"
+  - TEMPLATE="orange"
+  - VARIANT="tiles"
+notifications:
+  email:
+on_success: always
