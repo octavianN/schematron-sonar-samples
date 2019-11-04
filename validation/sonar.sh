@@ -8,7 +8,7 @@ then
 fi
 
 echo "Running validation"
-bash resources/validation/validate.sh
+bash validation/validate.sh
 
 echo "Running sonar"
 bin/sonar/bin/sonar-scanner \
