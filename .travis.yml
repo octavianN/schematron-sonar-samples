@@ -2,7 +2,7 @@ language: xslt
 install:
 - echo "Installed"
 script:
-- sh validation/publish.sh
+- sh validation/validate.sh
 env:
   global:
   - TITLE="Schematron sonar report"
