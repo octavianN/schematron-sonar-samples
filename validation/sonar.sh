@@ -12,5 +12,5 @@ bash validation/validate.sh
 
 echo "Running sonar"
 bin/sonar/bin/sonar-scanner \
-    -Dproject.settings=resources/validation/sonar.properties
+    -Dproject.settings=validation/sonar.properties
    
