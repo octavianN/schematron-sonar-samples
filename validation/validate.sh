@@ -26,8 +26,8 @@ mkdir -p bin/tmp/
 
 echo "Validating with schematron"
 
-java -jar bin/saxon9.jar validation/flowers.sch $SCHEMATRON_DIR/iso_dsdl_include.xsl > bin/tmp/paper-includes.sch
+java -jar bin/saxon9.jar validation/paper.sch $SCHEMATRON_DIR/iso_dsdl_include.xsl > bin/tmp/paper-includes.sch
 java -jar bin/saxon9.jar bin/tmp/paper-includes.sch $SCHEMATRON_DIR/iso_abstract_expand.xsl > bin/tmp/paper-expanded.sch
 java -jar bin/saxon9.jar bin/tmp/paper-expanded.sch $SCHEMATRON_DIR/iso_svrl_for_xslt2.xsl > bin/tmp/paper-validate.xsl
-java -jar bin/saxon9.jar validation/flowers.xml bin/tmp/paper-validate.xsl > bin/tmp/paper.svrl
+java -jar bin/saxon9.jar paper.xml bin/tmp/paper-validate.xsl > bin/tmp/paper.svrl
 java -jar bin/svrl-to-sonar.jar bin/tmp/paper.svrl > bin/tmp/sonar-schematron.json

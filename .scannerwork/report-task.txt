@@ -1,0 +1,7 @@
+organization=octaviann
+projectKey=octavianN_schematron-sonar-samples
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.2409
+dashboardUrl=https://sonarcloud.io/dashboard?id=octavianN_schematron-sonar-samples
+ceTaskId=AW46hpeKLHjFIR2LQqao
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AW46hpeKLHjFIR2LQqao
