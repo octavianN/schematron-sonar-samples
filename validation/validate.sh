@@ -16,7 +16,7 @@ fi
 echo "Downloading the SVRL to SONAR conversion tool"
 if [[ ! -e bin/svrl-to-sonar.jar ]];
 then
-  curl -qL https://github.com/ctalau/svrl-to-sonar/releases/download/0.1/svrl-to-sonar-0.1.jar > bin/svrl-to-sonar.jar
+  curl -qL https://github.com/octaviann/svrl-to-sonar/releases/download/0.2/svrl-to-sonar-0.2.jar > bin/svrl-to-sonar.jar
 fi
 
 
