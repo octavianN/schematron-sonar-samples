@@ -1,3 +1,5 @@
+#!/bin/bash
+
 SCHEMATRON_DIR=bin/xspec/src/schematron/iso-schematron/
 
 echo "Downloading Saxon 9"
