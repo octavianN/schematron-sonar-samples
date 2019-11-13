@@ -1,3 +1,5 @@
+#!/bin/bash
+
 SCHEMATRON_DIR=bin/xspec/src/schematron/iso-schematron/
 
 echo "Downloading Saxon 9"
@@ -16,7 +18,7 @@ fi
 echo "Downloading the SVRL to SONAR conversion tool"
 if [[ ! -e bin/svrl-to-sonar.jar ]];
 then
-  curl -qL https://github.com/octaviann/svrl-to-sonar/releases/download/0.2/svrl-to-sonar-0.2.jar > bin/svrl-to-sonar.jar
+  curl -qL https://github.com/octaviann/svrl-to-sonar/releases/download/0.2/svrl-to-sonar.jar > bin/svrl-to-sonar.jar
 fi
 
 
