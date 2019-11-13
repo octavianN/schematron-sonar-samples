@@ -25,6 +25,7 @@ fi
 
 rm -rf bin/tmp/
 mkdir -p bin/tmp/
+mkdir -p bin/out/
 
 echo "Validating with schematron"
 
@@ -33,3 +34,5 @@ java -jar bin/saxon9.jar bin/tmp/paper-includes.sch $SCHEMATRON_DIR/iso_abstract
 java -jar bin/saxon9.jar bin/tmp/paper-expanded.sch $SCHEMATRON_DIR/iso_svrl_for_xslt2.xsl > bin/tmp/paper-validate.xsl
 java -jar bin/saxon9.jar paper.xml bin/tmp/paper-validate.xsl > bin/tmp/paper.svrl
 java -jar bin/svrl-to-sonar.jar bin/tmp/paper.svrl > bin/tmp/sonar-schematron.json
+echo "Generate HTML report"
+java -jar bin/saxon9.jar bin/tmp/paper.svrl validation/svrl-to-html.xsl > bin/out/paperReport.html
